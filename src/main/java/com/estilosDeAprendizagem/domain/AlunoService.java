@@ -2,9 +2,11 @@ package com.estilosDeAprendizagem.domain;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AlunoService {
@@ -16,14 +18,41 @@ public class AlunoService {
         return rep.findAll();
     }
 
-    public List<Aluno> getAlunosFake() {
-        List<Aluno> alunos = new ArrayList<>();
-
-        alunos.add(new Aluno(1L, "Lucas Rufino Maiellaro", "Lobo", "ADS", 19, "Masculino", "4º Semestre"));
-        alunos.add(new Aluno(2L, "Arthur Viveiros", "Gato", "ADS", 19, "Masculino", "4º Semestre"));
-        alunos.add(new Aluno(3L, "Ana Beatriz Barbosa Alves", "Tubarão", "ADS", 18, "Feminino", "4º Semestre"));
-
-        return alunos;
+    public Optional<Aluno> getAlunoById(Long id) {
+        return rep.findById(id);
     }
 
+    public Iterable<Aluno> getAlunosByCurso(String curso) {
+        return rep.findByCurso(curso);
+    }
+
+    public Aluno insert(Aluno aluno) {
+        return rep.save(aluno);
+    }
+
+    public Aluno update(Aluno aluno, Long id) {
+        Assert.notNull(id, "Não foi possível atualizar o registro.");
+
+        Optional<Aluno> optional = getAlunoById(id);
+        if (optional.isPresent()) {
+            Aluno db = optional.get();
+            db.setNome(aluno.getNome());
+            db.setEstiloDeAprendizagem(aluno.getEstiloDeAprendizagem());
+            db.setCurso(aluno.getCurso());
+            db.setIdade(aluno.getIdade());
+            db.setGenero(aluno.getGenero());
+            db.setSemestre(aluno.getSemestre());
+
+            rep.save(db);
+            return db;
+        } else {
+            throw new RuntimeException("Não foi possível atualizar o registro.");
+        }
+    }
+
+    public void delete(Long id) {
+        Optional<Aluno> aluno = getAlunoById(id);
+        if(aluno.isPresent())
+            rep.deleteById(id);
+    }
 }
